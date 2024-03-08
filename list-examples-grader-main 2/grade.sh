@@ -8,6 +8,45 @@ mkdir grading-area
 git clone $1 student-submission
 echo 'Finished cloning'
 
+CODEPATH=$(find . -name ListExamples.java)
+# checking if correct files are submitted
+if [[ -f $CODEPATH ]]
+then
+  echo "File found"
+else 
+  echo "File not found"
+  exit
+fi
+
+# Moving files to grading-area
+cp $CODEPATH  grading-area
+cp -r lib grading-area
+cp -r TestListExamples.java grading-area
+
+# compiling the code
+cd grading-area
+javac -cp $CPATH *.java
+
+if [[ $? -ne 0 ]]
+then
+  echo "Code did not compile"
+  exit
+else
+  echo "Code compiled"
+fi
+
+# Running tests
+java -cp $CPATH org.junit.runner.JUnitCore TestListExamples > testOutput.txt
+grep_output=$(grep "OK" testOutput.txt)
+if [[ -n "$grep_output" ]]
+then
+  echo "100%"
+else
+  grep_tests=$(grep "Tests run" testOutput.txt | cut -d " " -f3 | cut -d "," -f1)
+  grep_fails=$(grep "Tests run" testOutput.txt | cut -d " " -f6)
+  grep_passes=$((grep_tests-grep_fails))
+  echo Your score is "$grep_passes"/"$grep_tests"
+fi
 
 # Draw a picture/take notes on the directory structure that's set up after
 # getting to this point
